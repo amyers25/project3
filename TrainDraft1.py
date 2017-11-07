@@ -20,9 +20,15 @@ def is_thursday(i):
 	"""Returns True if it is Thursday"""
 	return i % 5 == 3
 
-def coal_left_in_tipple(loading_time):
+#def coal_left_in_tipple(loading_time):
 	"""Returns amount of coal left in the tipple after a given train has been loaded"""
-	tipple -= ((1/3) * loading_time)
+	#tipple -= ((1/3) * loading_time)
+
+def train_waiting_time(train):
+	if train['engines'] == 3:
+		return train['load_start'] - train['arrival_time']
+	else: 
+		return (train['load_start'] - train['arrival_time']) + (0.5/tipple_loading_rate)/crews
 
 def call_second_crew(train):
 	"""Returns True if it is determined that second crew should be called"""
@@ -41,28 +47,27 @@ def call_second_crew(train):
 random.seed(0)
 
 number_of_days = 10 #Number of days the simulation is run
-max_trains = 4 #Maximum number of trains that can arrive in a day
 tipple_loading_rate = 0.25 #Crew can fill tipple at rate of 0.25 units per hour, or 0.25/60 units per minute
-crews = 1 #number of crews loading tipple at a given time
+crews = 2 #number of crews loading tipple at a given time
 demurrage_rate = 5000 #demurrage rate is $5000 per engine per hour
 
 
 
 """Trains sorted by day in a 2D array"""
-days = [[] for i in xrange(number_of_days)] 
+days = [[] for i in range(number_of_days)] 
 #train[0][2] refers to dictionary for third train on day 1
 	
-for i in xrange(number_of_days):
+for i in range(number_of_days):
 	if is_thursday(i):
 		days[i].append({'arrival_time':generate_hc_arrival_time(), 'engines':5})
 
-for i in xrange(number_of_days):	
-	for j in xrange(3):
+for i in range(number_of_days):	
+	for j in range(3):
 		days[i].append({'arrival_time':generate_arrival_time(), 'engines':3})
 
 #Sort trains for each day based on arrival time:
-for i in xrange(number_of_days):
-	for j in len(days[i]):
+for i in range(number_of_days):
+	for j in range(len(days[i])):
 		days[i].sort(key=operator.itemgetter('arrival_time'))
 
 
@@ -73,18 +78,17 @@ for day in days:
 	for train in day:
 		if train['arrival_time'] < tipple_available:
 			if train['engines'] == 3 and coal_left_in_tipple < 1.0:
-				train['load_start'] = tipple_available + ((1.0 - tipple)/tipple_loading_rate)/crews
-			#check tipple amount at tipple_available train['load_start'] = tipple_available
+				train['load_start'] = tipple_available + ((1.0 - coal_left_in_tipple)/tipple_loading_rate)/crews
+			elif train['engines'] == 5 and coal_left_in_tipple < 1.5:
+				train['load_start'] = tipple_available + ((1.5 - coal_left_in_tipple)/tipple_loading_rate)/crews
 		elif train['engines'] == 3 and coal_left_in_tipple < 1.0:
-			train['load_start'] = train['arrival_time'] + ((1.0 - tipple)/tipple_loading_rate)/crews
+			train['load_start'] = train['arrival_time'] + ((1.0 - coal_left_in_tipple)/tipple_loading_rate)/crews
 		elif train['engines'] == 5 and coal_left_in_tipple < 1.5:
-			train['load_start'] = train['arrival_time'] + ((1.5 - tipple)/tipple_loading_rate)/crews
+			train['load_start'] = train['arrival_time'] + ((1.5 - coal_left_in_tipple)/tipple_loading_rate)/crews
 		else:
 			train['load_start'] = train['arrival_time']
-			if train['engines'] == 3:
-				train['waiting_time'] == 0
-			else:
-				train['waiting_time'] == (0.5/tipple_loading_rate)/crews #crews = 2 here
+			
+		train['waiting_time'] = train_waiting_time(train)
 
 		if train['engines'] == 3:
 			train['load_time'] = 3
@@ -96,8 +100,6 @@ for day in days:
 		train['load_stop'] = train['arrival_time'] + train['waiting_time'] + train['load_time']
 		tipple_available = train['load_stop']
 
-#Calculate the time at which each train leaves:
-
 
 #Calculate idle time for each day, during which crew is loading tipple if it is not full:
 
@@ -108,3 +110,12 @@ for day in days:
 		train['demurrage'] = train['waiting_time'] * train['engines'] * demurrage_rate
 
 #Calculate crew costs for each day?
+
+
+#Print results:
+i = 1
+for day in days:
+	print("Day " + str(i))
+	i += 1
+	for train in day:
+		print(train)
