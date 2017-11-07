@@ -68,13 +68,16 @@ for i in xrange(number_of_days):
 
 #Simulation
 for day in days:
-	previous_train_finished_loading = 500
+	tipple_available = 500
+	coal_left_in_tipple = 1.5
 	for train in day:
-		if train['arrival_time'] < previous_train_finished_loading:
-			#check tipple amount at previous_train_finished_unloading train['load_start'] = previous_train_finished_loading
-		elif train['engines'] == 3 and tipple < 1.0:
+		if train['arrival_time'] < tipple_available:
+			if train['engines'] == 3 and coal_left_in_tipple < 1.0:
+				train['load_start'] = tipple_available + ((1.0 - tipple)/tipple_loading_rate)/crews
+			#check tipple amount at tipple_available train['load_start'] = tipple_available
+		elif train['engines'] == 3 and coal_left_in_tipple < 1.0:
 			train['load_start'] = train['arrival_time'] + ((1.0 - tipple)/tipple_loading_rate)/crews
-		elif train['engines'] == 5 and tipple < 1.5:
+		elif train['engines'] == 5 and coal_left_in_tipple < 1.5:
 			train['load_start'] = train['arrival_time'] + ((1.5 - tipple)/tipple_loading_rate)/crews
 		else:
 			train['load_start'] = train['arrival_time']
@@ -85,17 +88,13 @@ for day in days:
 
 		if train['engines'] == 3:
 			train['load_time'] = 3
+			coal_left_in_tipple -= 1.0
 		else:
 			train['load_time'] = 6
+			coal_left_in_tipple -= 1.5
 
 		train['load_stop'] = train['arrival_time'] + train['waiting_time'] + train['load_time']
-		previous_train_finished_loading = train['load_stop']
-
-#Calculate waiting times:
-for day in days:
-	for train in day:
-		if tipple > 1 and no trains ahead:
-			train['waiting_time'] = train['load_start'] - train['arrival_time']
+		tipple_available = train['load_stop']
 
 #Calculate the time at which each train leaves:
 
