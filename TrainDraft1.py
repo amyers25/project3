@@ -89,12 +89,7 @@ for i in range(number_of_days):
 
 
 #2D array that holds hours worked by first and second crew each day
-crew_hours = [[] for i in range(number_of_days)]
-
-#Initialize array to 0:
-for day in range(number_of_days):
-	for crew in range(2):
-		crew_hours[day][crew] = 0
+crew_hours = [[0 for crew in range(2)] for day in range(number_of_days)]
 #crew_hours[0][1] represents hours worked by second crew on day 1
 
 def add_crew_hours(day, coal_left_in_tipple, tipple_available, crews):
