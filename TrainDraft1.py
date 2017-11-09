@@ -90,23 +90,32 @@ for day in days:
 	tipple_available = 5
 	coal_left_in_tipple = 1.5
 	for train in day:
+		'''if train arrival time is less than the availibility of the tipple, and the train is normal (3 engines) && the tipple is not 2/3s full(1) the train will begin to load once the tipple has reached 1 standard train load'''
 		if train['arrival_time'] < tipple_available:
 			if train['engines'] == 3 and coal_left_in_tipple < 1.0:
 				train['load_start'] = tipple_available + ((1.0 - coal_left_in_tipple)/tipple_loading_rate)/crews
+				'''if the train is large (5 engines) && the tipple is not full (1.5) the train will begin to load once the tipple 
+				has reached maximum capacity'''
 			elif train['engines'] == 5 and coal_left_in_tipple < 1.5:
 				train['load_start'] = tipple_available + ((1.5 - coal_left_in_tipple)/tipple_loading_rate)/crews
+			'''if the tipple is available, and the train is normal (3 engines) && the tipple is not 2/3s full (1) the train will
+			begin to load once the tipple has reached 1 standard train load'''
 		elif train['engines'] == 3 and coal_left_in_tipple < 1.0:
 			train['load_start'] = train['arrival_time'] + ((1.0 - coal_left_in_tipple)/tipple_loading_rate)/crews
+			'''if the tipple is available, and the train is large (5 engines) && the tipple is not full (1.5) the train will begin 
+			to load once the tipple has reached maximum capacity'''
 		elif train['engines'] == 5 and coal_left_in_tipple < 1.5:
 			train['load_start'] = train['arrival_time'] + ((1.5 - coal_left_in_tipple)/tipple_loading_rate)/crews
+			'''if the tipple is available, and full, load immediately'''
 		else:
 			train['load_start'] = train['arrival_time']
-			
+			'''set the waiting time for train by calling train waiting method (line ~27)'''
 		train['waiting_time'] = train_waiting_time(train)
-
+		'''set the load time for a normal train by calling the train loading method (yet to be added)'''
 		if train['engines'] == 3:
 			train['load_time'] = standard_train_load_time
 			coal_left_in_tipple -= 1.0
+			'''set the load time for a large train by calling the train loading method (yet to be added)'''
 		else:
 			train['load_time'] = hc_train_load_time
 			coal_left_in_tipple -= 1.5
