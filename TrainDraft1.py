@@ -9,12 +9,12 @@ import operator
 def generate_arrival_time():
 	#Time of standard train arrivals is uniformly distributed between 0500 and 2000
 	#Trains arrive on the minute
-	return int(random.uniform(500, 2000))
+	return random.choice([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
 
 def generate_hc_arrival_time():
 	#Time of high-capacity train arrival is uniformly distribruted between 1100 and 1300
 	#Trains arrive on the minute
-	return int(random.uniform(1100, 1300))
+	return random.choice([11, 12, 13])
 
 def is_thursday(i):
 	"""Returns True if it is Thursday"""
@@ -44,23 +44,37 @@ def call_second_crew(train):
 			else:
 				return False
 
+def number_of_crews(train):
+	if tipple < 1.5:
+		if waiting:
+			crews = 2
+		else:
+			if(is_thursday(train)):
+				crews = 2
+			else:
+				crews = 1
+
 random.seed(0)
 
 number_of_days = 10 #Number of days the simulation is run
 tipple_loading_rate = 0.25 #Crew can fill tipple at rate of 0.25 units per hour, or 0.25/60 units per minute
 crews = 2 #number of crews loading tipple at a given time
 demurrage_rate = 5000 #demurrage rate is $5000 per engine per hour
+standard_train_load_time = 3 #takes 3 hours to load standard train
+hc_train_load_time = 6 #takes 6 hours to load high-capacity train
 
 
 
 """Trains sorted by day in a 2D array"""
 days = [[] for i in range(number_of_days)] 
 #train[0][2] refers to dictionary for third train on day 1
-	
+
+#Generate one high-capacity (five-engine) train arrival time for each Thursday:
 for i in range(number_of_days):
 	if is_thursday(i):
 		days[i].append({'arrival_time':generate_hc_arrival_time(), 'engines':5})
 
+#Generate three standard (three-engine) train arrival times for each day:
 for i in range(number_of_days):	
 	for j in range(3):
 		days[i].append({'arrival_time':generate_arrival_time(), 'engines':3})
@@ -73,7 +87,7 @@ for i in range(number_of_days):
 
 #Simulation
 for day in days:
-	tipple_available = 500
+	tipple_available = 5
 	coal_left_in_tipple = 1.5
 	for train in day:
 		if train['arrival_time'] < tipple_available:
@@ -91,10 +105,10 @@ for day in days:
 		train['waiting_time'] = train_waiting_time(train)
 
 		if train['engines'] == 3:
-			train['load_time'] = 3
+			train['load_time'] = standard_train_load_time
 			coal_left_in_tipple -= 1.0
 		else:
-			train['load_time'] = 6
+			train['load_time'] = hc_train_load_time
 			coal_left_in_tipple -= 1.5
 
 		train['load_stop'] = train['arrival_time'] + train['waiting_time'] + train['load_time']
@@ -118,4 +132,5 @@ for day in days:
 	print("Day " + str(i))
 	i += 1
 	for train in day:
+		print(train)
 		print(train)
