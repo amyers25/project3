@@ -133,4 +133,3 @@ for day in days:
 	i += 1
 	for train in day:
 		print(train)
-		print(train)
