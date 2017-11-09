@@ -62,7 +62,8 @@ crews = 2 #number of crews loading tipple at a given time
 demurrage_rate = 5000 #demurrage rate is $5000 per engine per hour
 standard_train_load_time = 3 #takes 3 hours to load standard train
 hc_train_load_time = 6 #takes 6 hours to load high-capacity train
-
+tipple_available = 5 #tipple available at 5am
+coal_left_in_tipple = 1.5 #initiailizing tipple with a full load 
 
 
 """Trains sorted by day in a 2D array"""
@@ -86,51 +87,51 @@ for i in range(number_of_days):
 
 
 #Simulation
-for day in days:
-	tipple_available = 5
-	coal_left_in_tipple = 1.5
-	for train in day:
-		'''if train arrival time is less than the availibility of the tipple, and the train is normal (3 engines) && the tipple is not 2/3s full(1) the train will begin to load once the tipple has reached 1 standard train load'''
-		if train['arrival_time'] < tipple_available:
-			if train['engines'] == 3 and coal_left_in_tipple < 1.0:
-				train['load_start'] = tipple_available + ((1.0 - coal_left_in_tipple)/tipple_loading_rate)/crews
-				'''if the train is large (5 engines) && the tipple is not full (1.5) the train will begin to load once the tipple 
-				has reached maximum capacity'''
+def train_loading_time (train, tipple_available, coal_left_in_tipple):
+	for day in days:
+		for train in day:
+			'''if train arrival time is less than the availibility of the tipple, and the train is normal (3 engines) && the tipple is not 2/3s full(1) the train will begin to load once the tipple has reached 1 standard train load'''
+			if train['arrival_time'] < tipple_available:
+				if train['engines'] == 3 and coal_left_in_tipple < 1.0:
+					train['load_start'] = tipple_available + ((1.0 - coal_left_in_tipple)/tipple_loading_rate)/crews%24
+					'''if the train is large (5 engines) && the tipple is not full (1.5) the train will begin to load once the tipple 
+					has reached maximum capacity'''
+				elif train['engines'] == 5 and coal_left_in_tipple < 1.5:
+					train['load_start'] = tipple_available + ((1.5 - coal_left_in_tipple)/tipple_loading_rate)/crews%24
+				'''if the tipple is available, and the train is normal (3 engines) && the tipple is not 2/3s full (1) the train will
+				begin to load once the tipple has reached 1 standard train load'''
+			elif train['engines'] == 3 and coal_left_in_tipple < 1.0:
+				train['load_start'] = train['arrival_time'] + ((1.0 - coal_left_in_tipple)/tipple_loading_rate)/crews%24
+				'''if the tipple is available, and the train is large (5 engines) && the tipple is not full (1.5) the train will begin 
+				to load once the tipple has reached maximum capacity'''
 			elif train['engines'] == 5 and coal_left_in_tipple < 1.5:
-				train['load_start'] = tipple_available + ((1.5 - coal_left_in_tipple)/tipple_loading_rate)/crews
-			'''if the tipple is available, and the train is normal (3 engines) && the tipple is not 2/3s full (1) the train will
-			begin to load once the tipple has reached 1 standard train load'''
-		elif train['engines'] == 3 and coal_left_in_tipple < 1.0:
-			train['load_start'] = train['arrival_time'] + ((1.0 - coal_left_in_tipple)/tipple_loading_rate)/crews
-			'''if the tipple is available, and the train is large (5 engines) && the tipple is not full (1.5) the train will begin 
-			to load once the tipple has reached maximum capacity'''
-		elif train['engines'] == 5 and coal_left_in_tipple < 1.5:
-			train['load_start'] = train['arrival_time'] + ((1.5 - coal_left_in_tipple)/tipple_loading_rate)/crews
-			'''if the tipple is available, and full, load immediately'''
-		else:
-			train['load_start'] = train['arrival_time']
-			'''set the waiting time for train by calling train waiting method (line ~27)'''
-		train['waiting_time'] = train_waiting_time(train)
-		'''set the load time for a normal train by calling the train loading method (yet to be added)'''
-		if train['engines'] == 3:
-			train['load_time'] = standard_train_load_time
-			coal_left_in_tipple -= 1.0
-			'''set the load time for a large train by calling the train loading method (yet to be added)'''
-		else:
-			train['load_time'] = hc_train_load_time
-			coal_left_in_tipple -= 1.5
+				train['load_start'] = train['arrival_time'] + ((1.5 - coal_left_in_tipple)/tipple_loading_rate)/crews%24
+				'''if the tipple is available, and full, load immediately'''
+			else:
+				train['load_start'] = train['arrival_time']%24
+				'''set the waiting time for train by calling train waiting method (line ~27)'''
+			train['waiting_time'] = train_waiting_time(train)
+			'''set the load time for a normal train by calling the train loading method (yet to be added)'''
+			if train['engines'] == 3:
+				train['load_time'] = standard_train_load_time
+				coal_left_in_tipple -= 1.0
+				'''set the load time for a large train by calling the train loading method (yet to be added)'''
+			else:
+				train['load_time'] = hc_train_load_time
+				coal_left_in_tipple -= 1.5
 
-		train['load_stop'] = train['arrival_time'] + train['waiting_time'] + train['load_time']
-		tipple_available = train['load_stop']
+			train['load_stop'] = train['arrival_time'] + train['waiting_time'] + train['load_time']
+			tipple_available = train['load_stop']%24
 
 
 #Calculate idle time for each day, during which crew is loading tipple if it is not full:
 
 
 #Calculate demurrage for each train:
-for day in days:
-	for train in day:
-		train['demurrage'] = train['waiting_time'] * train['engines'] * demurrage_rate
+def demurrage_calc(train):
+	for day in days:
+		for train in day:
+			train['demurrage'] = train['waiting_time'] * train['engines'] * demurrage_rate
 
 #Calculate crew costs for each day?
 
