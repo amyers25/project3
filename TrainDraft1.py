@@ -1,5 +1,6 @@
 #-Assume tipple is full at 5 a.m. of Day 1 and workers who loaded the tipple have already been paid
 #-Assume at least one crew is working to fill tipple if it is not full and no trains are waiting
+#-Assume trains are filled on a first-come, first-serve basis
 #-Two crews should always be working if train is waiting (demurrage is costlier than crew)
 #-The simulation is executed on an hourly basis
 #-Work modulo 24 to simulate 24 hours in each day
@@ -41,15 +42,17 @@ def is_thursday(i):
 	#Returns True if it is Thursday (fifth day of week)
 	return i % days_in_week == 4
 
-def work_before_next_train(train, day, train_index, crews):
+def work_before_next_train(train, day, train_index):
 	#Returns time tipple is available and full enough to load current train
 	#Calculates and tracks hours worked by crews to fill tipple
 	global tipple_available
 	global coal_left_in_tipple
 	global current_day
-	#waiting set to false since work_before_next_train cannot be true
+
+	#Determine number of crews that should be working when no trains are waiting to be filled and considering day of week:
 	waiting = False
-	crews = number_of_crews(waiting)
+	crews = number_of_crews(waiting, train_index)
+
 	#Calculate hours necessary to fill tipple to its maximum capacity (with one or two crews):
 	hours_until_full = ((tipple_max - coal_left_in_tipple)/tipple_loading_rate)/crews
 	
@@ -75,24 +78,24 @@ def work_before_next_train(train, day, train_index, crews):
 	else:
 		return (tipple_available + hours_worked) % 24
 
-def train_load_start(train, crews, day, train_index):
+def train_load_start(train, day, train_index):
 	#Calculates time current train starts loading based on amount of coal in tipple at train's arrival time
 	global tipple_available
 	global coal_left_in_tipple
 	if (train['arrival_time'] < tipple_available and current_day == train['day']) or (train['arrival_time'] >= tipple_available and current_day != train['day']):
 		if train['engines'] == 3 and coal_left_in_tipple < 1.0:
-			#Waiting is true since tipple is not full
+			#Determine number of crews that should be working when at least one train is waiting to be filled:
 			waiting = True
-			crews = number_of_crews(waiting)
+			crews = number_of_crews(waiting, train_index)
 			prev_coal_in_tipple = coal_left_in_tipple
 			coal_left_in_tipple = 1.0
 			for crew in range(crews):
 				crew_hours[day][crew] += (((1.0 - prev_coal_in_tipple)/tipple_loading_rate)/crews)
 			return (tipple_available + ((1.0 - prev_coal_in_tipple)/tipple_loading_rate)/crews) % 24
 		elif train['engines'] == 5 and coal_left_in_tipple < 1.5:
-			#Waiting is true since tipple is not full
+			#Determine number of crews that should be working when at least one train is waiting to be filled:
 			waiting = True
-			crews = number_of_crews(waiting)
+			crews = number_of_crews(waiting, train_index)
 			prev_coal_in_tipple = coal_left_in_tipple
 			coal_left_in_tipple = 1.5
 			for crew in range(crews):
@@ -101,18 +104,18 @@ def train_load_start(train, crews, day, train_index):
 		else:
 			return tipple_available % 24
 	elif train['engines'] == 3 and coal_left_in_tipple < 1.0:
-		#Waiting is True since tipple is not full
+		#Determine number of crews that should be working when at least one train is waiting to be filled:
 		waiting = True
-		crews = number_of_crews(waiting)
+		crews = number_of_crews(waiting, train_index)
 		prev_coal_in_tipple = coal_left_in_tipple
 		coal_left_in_tipple = 1.0
 		for crew in range(crews):
 			crew_hours[day][crew] += (((1.0 - prev_coal_in_tipple)/tipple_loading_rate)/crews)
 		return (train['arrival_time'] + ((1.0 - prev_coal_in_tipple)/tipple_loading_rate)/crews) % 24
 	elif train['engines'] == 5 and coal_left_in_tipple < 1.5:
-		#Waiting is true since tipple is not full
+		#Determine number of crews that should be working when at least one train is waiting to be filled:
 		waiting = True
-		crews = number_of_crews(waiting)
+		crews = number_of_crews(waiting, train_index)
 		prev_coal_in_tipple = coal_left_in_tipple
 		coal_left_in_tipple = 1.5
 		for crew in range(crews):
@@ -124,16 +127,23 @@ def train_load_start(train, crews, day, train_index):
 	print("ERROR: Load time not set")
 	quit()
 
-def train_waiting_time(train):
+def train_waiting_time(train, train_index):
 	#Returns total waiting time for current train
 	if train['engines'] == 3:
 		return (train['load_start'] - train['arrival_time']) % 24
 	else: 
+		#Determine number of crews that should be working while train is waiting to be filled:
+		waiting = True
+		crews = number_of_crews(waiting, train_index)
+
+		#Add time it takes to fill tipple to waiting time so high-capacity train can finish loading:
 		return ((train['load_start'] - train['arrival_time']) % 24) + (0.5/tipple_loading_rate)/crews
 
-def number_of_crews(waiting):
+def number_of_crews(waiting, train_index):
 	#Determines number of crews that should be working
 	if waiting:
+		return 2
+	elif is_thursday(train_index):
 		return 2
 	else:
 		return 1
@@ -142,7 +152,6 @@ random.seed(0)
 
 number_of_days = 14 #Number of days the simulation is run
 days_in_week = 7 #Number of days in a week
-crews = 2 #Number of crews loading tipple at a given time
 tipple_loading_rate = 0.25 #Crew can fill tipple at rate of 0.25 units per hour
 standard_train_load_time = 3 #Takes 3 hours to load standard train
 hc_train_load_time = 6 #Takes 6 hours to load high-capacity train
@@ -183,13 +192,13 @@ def simulation():
 	for day, daily_hours in zip(days, crew_hours):
 		for train in day:
 			#Determine when tipple will be full enough to fill train until train is at its maximum capacity:
-			tipple_available = work_before_next_train(train, days.index(day), day.index(train), crews)
+			tipple_available = work_before_next_train(train, days.index(day), day.index(train))
 
 			#Determine when the train begins to load:
-			train['load_start'] = train_load_start(train, crews, days.index(day), day.index(train))
+			train['load_start'] = train_load_start(train, days.index(day), day.index(train))
 
 			#Calculate the train's total waiting time:
-			train['waiting_time'] = train_waiting_time(train)
+			train['waiting_time'] = train_waiting_time(train, day.index(train))
 			
 			#Subtract from tipple the amount of coal loaded into current train:
 			if train['engines'] == 3:
