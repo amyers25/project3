@@ -1,4 +1,5 @@
 #-Assume tipple is full at 5 a.m. of Day 1 and workers who loaded the tipple have already been paid
+#-Assume Day 1 is a Sunday
 #-Assume at least one crew is working to fill tipple if it is not full and no trains are waiting
 #-Assume trains are filled on a first-come, first-serve basis
 #-Two crews should always be working if train is waiting (demurrage is costlier than crew)
@@ -12,6 +13,8 @@ def display_results():
     total_hc_wait_time = 0
     total_demurrage = 0
     total_hc_demurrage = 0
+    total_crew_hours = [0, 1]
+
     for day in days:
         for train in day:
             if train['engines'] == 3:
@@ -20,6 +23,10 @@ def display_results():
             else:
                 total_hc_wait_time += train["waiting_time"]
                 total_hc_demurrage += train["demurrage"]   
+    print(crew_hours)
+    for day in range(number_of_days):
+    	for crew in range(2):
+    		total_crew_hours[crew] += crew_hours[day][crew]
     print("Number of days simulation is run: %d" % (number_of_days))    
     print("Total Waiting Time: %d" % (total_wait_time))
     print("Total High Capacity Waiting Time: %d" % (total_hc_wait_time))
@@ -27,6 +34,8 @@ def display_results():
     print("Total High Capacity Demurrage: %d" % (total_hc_demurrage))
     print("Average Waiting Time: %d" % (total_wait_time/number_of_days/3))
     print("Average High Capacity Waiting Time: %d" % (total_hc_wait_time/number_of_days/3))
+    print("Hours worked by first crew: %.2f" % (total_crew_hours[0]))
+    print("Hours worked by second crew: %.2f" % (total_crew_hours[1]))
 
 def generate_arrival_time():
 	#Time of standard train arrivals is uniformly distributed between 0500 and 2000
@@ -127,7 +136,7 @@ def train_load_start(train, day, train_index):
 	print("ERROR: Load time not set")
 	quit()
 
-def train_waiting_time(train, train_index):
+def train_waiting_time(train, day, train_index):
 	#Returns total waiting time for current train
 	if train['engines'] == 3:
 		return (train['load_start'] - train['arrival_time']) % 24
@@ -135,6 +144,10 @@ def train_waiting_time(train, train_index):
 		#Determine number of crews that should be working while train is waiting to be filled:
 		waiting = True
 		crews = number_of_crews(waiting, train_index)
+
+		#Account for hours worked by crew to refill tipple:
+		for crew in range(crews):
+			crew_hours[day][crew] += ((0.5/tipple_loading_rate)/crews)
 
 		#Add time it takes to fill tipple to waiting time so high-capacity train can finish loading:
 		return ((train['load_start'] - train['arrival_time']) % 24) + (0.5/tipple_loading_rate)/crews
@@ -198,7 +211,7 @@ def simulation():
 			train['load_start'] = train_load_start(train, days.index(day), day.index(train))
 
 			#Calculate the train's total waiting time:
-			train['waiting_time'] = train_waiting_time(train, day.index(train))
+			train['waiting_time'] = train_waiting_time(train, days.index(day), day.index(train))
 			
 			#Subtract from tipple the amount of coal loaded into current train:
 			if train['engines'] == 3:
