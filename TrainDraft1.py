@@ -23,10 +23,15 @@ def display_results():
             else:
                 total_hc_wait_time += train["waiting_time"]
                 total_hc_demurrage += train["demurrage"]   
-    print(crew_hours)
+    
     for day in range(number_of_days):
     	for crew in range(2):
     		total_crew_hours[crew] += crew_hours[day][crew]
+    
+    first_crew_cost = total_crew_hours[0] * 9000
+    second_crew_cost = total_crew_hours[1] * 12000
+    total_crew_cost = first_crew_cost + second_crew_cost
+
     print("Number of days simulation is run: %d" % (number_of_days))    
     print("Total Waiting Time: %d" % (total_wait_time))
     print("Total High Capacity Waiting Time: %d" % (total_hc_wait_time))
@@ -36,6 +41,9 @@ def display_results():
     print("Average High Capacity Waiting Time: %d" % (total_hc_wait_time/number_of_days/3))
     print("Hours worked by first crew: %.2f" % (total_crew_hours[0]))
     print("Hours worked by second crew: %.2f" % (total_crew_hours[1]))
+    print("Cost of first crew: %.2f" % first_crew_cost)
+    print("Cost of first crew: %.2f" % second_crew_cost)
+    print("Total cost of both crews: %.2f" % total_crew_cost)
 
 def generate_arrival_time():
 	#Time of standard train arrivals is uniformly distributed between 0500 and 2000
@@ -163,7 +171,7 @@ def number_of_crews(waiting, train_index):
 
 random.seed(0)
 
-number_of_days = 14 #Number of days the simulation is run
+number_of_days = 7 #Number of days the simulation is run
 days_in_week = 7 #Number of days in a week
 tipple_loading_rate = 0.25 #Crew can fill tipple at rate of 0.25 units per hour
 standard_train_load_time = 3 #Takes 3 hours to load standard train
