@@ -45,7 +45,7 @@ def display_results():
     print("Cost of first crew: %.2f" % first_crew_cost)
     print("Cost of first crew: %.2f" % second_crew_cost)
     print("Total cost of both crews: %.2f" % total_crew_cost)
-    print("Total cost (demurrage and crew)" % total_crew_cost + total_demurrage + total_hc_demurrage)
+    print("Total cost (demurrage and crew): %.2f" % (total_crew_cost + total_demurrage + total_hc_demurrage))
 
 def generate_arrival_time():
 	#Time of standard train arrivals is uniformly distributed between 0500 and 2000
