@@ -13,7 +13,7 @@ def display_results():
     total_hc_wait_time = 0
     total_demurrage = 0
     total_hc_demurrage = 0
-    total_crew_hours = [0, 1]
+    total_crew_hours = [0, 0]
 
     for day in days:
         for train in day:
