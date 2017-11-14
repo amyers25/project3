@@ -32,6 +32,7 @@ def display_results():
     second_crew_cost = total_crew_hours[1] * 12000
     total_crew_cost = first_crew_cost + second_crew_cost
 
+    print("REGULAR SIMULATION")
     print("Number of days simulation is run: %d" % (number_of_days))    
     print("Total Waiting Time: %d" % (total_wait_time))
     print("Total High Capacity Waiting Time: %d" % (total_hc_wait_time))
@@ -44,6 +45,7 @@ def display_results():
     print("Cost of first crew: %.2f" % first_crew_cost)
     print("Cost of first crew: %.2f" % second_crew_cost)
     print("Total cost of both crews: %.2f" % total_crew_cost)
+    print("Total cost (demurrage and crew)" % total_crew_cost + total_demurrage + total_hc_demurrage)
 
 def generate_arrival_time():
 	#Time of standard train arrivals is uniformly distributed between 0500 and 2000
@@ -171,7 +173,7 @@ def number_of_crews(waiting, train_index):
 
 random.seed(0)
 
-number_of_days = 7 #Number of days the simulation is run
+number_of_days = 728 #Number of days the simulation is run
 days_in_week = 7 #Number of days in a week
 tipple_loading_rate = 0.25 #Crew can fill tipple at rate of 0.25 units per hour
 standard_train_load_time = 3 #Takes 3 hours to load standard train
@@ -264,11 +266,11 @@ for day in days:
 display_results()
 
 #Print results:
-print("******************************************************************************************************************************")
+"""print("******************************************************************************************************************************")
 print("FOR TESTING ONLY:")
 i = 1
 for day in days:
 	print("Day " + str(i))
 	i += 1
 	for train in day:
-		print(train)
+		print(train)"""
