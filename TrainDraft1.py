@@ -13,7 +13,7 @@ def display_results():
     total_hc_wait_time = 0
     total_demurrage = 0
     total_hc_demurrage = 0
-    total_crew_hours = [0, 0]
+    total_crew_hours = [0 for i in range(max_crew_number)]
 
     for day in days:
         for train in day:
@@ -25,13 +25,19 @@ def display_results():
                 total_hc_demurrage += train["demurrage"]   
     
     for day in range(number_of_days):
-    	for crew in range(2):
+    	for crew in range(max_crew_number):
     		total_crew_hours[crew] += crew_hours[day][crew]
     
-    first_crew_cost = total_crew_hours[0] * 9000
-    second_crew_cost = total_crew_hours[1] * 12000
-    total_crew_cost = first_crew_cost + second_crew_cost
+    first_crew_cost = total_crew_hours[0] * first_crew_rate
+    additional_crews_cost = sum(total_crew_hours) * additional_crew_rate - total_crew_hours[0] * additional_crew_rate
+    total_crew_cost = first_crew_cost + additional_crews_cost
 
+    #print("Two crews on Thursdays, one crew in all other cases")
+    #print("Three crews on Thursdays, two crews when a train is waiting, once crew in remaining cases")
+    #print("Three crews when a train is waiting and on Thursdays, one crew in remaining cases")
+    #print("Three crews when a train is waiting and on Thursdays, two crews in remaining cases")
+    #print("Three crews in all cases")
+    print("REGULAR SCENARIO")
     print("Number of days simulation is run: %d" % (number_of_days))    
     print("Total Waiting Time: %.3f" % (total_wait_time))
     print("Total High Capacity Waiting Time: %d" % (total_hc_wait_time))
@@ -42,8 +48,8 @@ def display_results():
     print("Hours worked by first crew: %.2f" % (total_crew_hours[0]))
     print("Hours worked by second crew: %.2f" % (total_crew_hours[1]))
     print("Cost of first crew: %.2f" % first_crew_cost)
-    print("Cost of first crew: %.2f" % second_crew_cost)
-    print("Total cost of both crews: %.2f" % total_crew_cost)
+    print("Cost of additional crew(s): %.2f" % additional_crews_cost)
+    print("Total cost of crews: %.2f" % total_crew_cost)
     print("Total cost (demurrage and crew): %.2f" % (total_crew_cost + total_demurrage + total_hc_demurrage))
 
 def generate_arrival_time():
@@ -172,13 +178,16 @@ def number_of_crews(waiting, train_index):
 
 random.seed(0)
 
-number_of_days = 14 #Number of days the simulation is run
+number_of_days = 7300 #Number of days the simulation is run
 number_of_thursdays = 0 #Number of Thursdays covered by the simulation
 days_in_week = 7 #Number of days in a week
 tipple_loading_rate = 0.25 #Crew can fill tipple at rate of 0.25 units per hour
 standard_train_load_time = 3 #Takes 3 hours to load standard train
 hc_train_load_time = 6 #Takes 6 hours to load high-capacity train
 demurrage_rate = 5000 #Demurrage rate is $5000 per engine per hour
+first_crew_rate = 9000 #First crew loads tipple at rate of $9000 per hour
+additional_crew_rate = 12000 #Second and third crews load tipple at rate of $12000 per hour
+max_crew_number = 3 #Maximum number of crews that can load tipple at one time
 coal_left_in_tipple = 1.5 #Standard train loads of coal remaining in tipple
 tipple_max = 1.5 #Maximum amount of standard train loads of coal the tipple can hold
 tipple_available = 5 #Time at which tipple is available on first day of simulation
@@ -206,7 +215,7 @@ for day in range(number_of_days):
 
 #2D array that holds hours worked by first and second crew each day:
 #Example: crew_hours[0][1] represents hours worked by second crew on day 1
-crew_hours = [[0 for crew in range(2)] for day in range(number_of_days)]
+crew_hours = [[0 for crew in range(max_crew_number)] for day in range(number_of_days)]
 
 def simulation():
 	#Loops through days and crew_hours simultaneously to simulate trains being loaded each day
@@ -267,11 +276,11 @@ for day in days:
 display_results()
 
 #Print results:
-print("******************************************************************************************************************************")
+"""print("******************************************************************************************************************************")
 print("FOR TESTING ONLY:")
 i = 1
 for day in days:
 	print("Day " + str(i))
 	i += 1
 	for train in day:
-		print(train)
+		print(train)"""
