@@ -55,12 +55,16 @@ def display_results():
 def generate_arrival_time():
 	#Time of standard train arrivals is uniformly distributed between 0500 and 2000
 	#Trains arrive on the hour
-	return random.choice([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
+	num = 5920
+	map(int, str(num))
+	return num
 
 def generate_hc_arrival_time():
 	#Time of high-capacity train arrival is uniformly distribruted between 1100 and 1300
 	#Trains arrive on the hour
-	return random.choice([11, 12, 13])
+	num2 = 11
+	map(int, str(num2))
+	return num2
 
 def is_thursday(i):
 	#Returns True if it is Thursday (fifth day of week)
