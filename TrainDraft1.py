@@ -37,7 +37,8 @@ def display_results():
     #print("Three crews when a train is waiting and on Thursdays, one crew in remaining cases")
     #print("Three crews when a train is waiting and on Thursdays, two crews in remaining cases")
     #print("Three crews in all cases")
-    print("REGULAR SCENARIO")
+    print("Scheduled Standard Trains")
+    #print("REGULAR SCENARIO")
     print("Number of days simulation is run: %d" % (number_of_days))    
     print("Total Waiting Time: %.3f" % (total_wait_time))
     print("Total High Capacity Waiting Time: %d" % (total_hc_wait_time))
@@ -52,19 +53,29 @@ def display_results():
     print("Total cost of crews: %.2f" % total_crew_cost)
     print("Total cost (demurrage and crew): %.2f" % (total_crew_cost + total_demurrage + total_hc_demurrage))
 
-def generate_arrival_time():
+def generate_arrival_time(index, thursday):
 	#Time of standard train arrivals is uniformly distributed between 0500 and 2000
 	#Trains arrive on the hour
-	num = 5920
-	map(int, str(num))
-	return num
+	if not thursday:
+		if index == 0:
+			return 6
+		elif index == 1:
+			return 13
+		elif index == 2:
+			return 20
+	else:
+		if index == 0:
+			return 5
+		elif index == 1:
+			return 10
+		elif index ==2:
+			return 20
+	#return random.choice([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
 
 def generate_hc_arrival_time():
 	#Time of high-capacity train arrival is uniformly distribruted between 1100 and 1300
 	#Trains arrive on the hour
-	num2 = 11
-	map(int, str(num2))
-	return num2
+	return random.choice([11, 12, 13])
 
 def is_thursday(i):
 	#Returns True if it is Thursday (fifth day of week)
@@ -78,7 +89,10 @@ def work_before_next_train(train, day, train_index):
 	global current_day
 
 	#Determine number of crews that should be working when no trains are waiting to be filled and considering day of week:
-	waiting = False
+	if train['day'] % 7 == 5 and train['arrival_time'] == 6:
+		waiting = True
+	else:
+		waiting = False
 	crews = number_of_crews(waiting, train_index)
 
 	#Calculate hours necessary to fill tipple to its maximum capacity (with one or two crews):
@@ -210,7 +224,7 @@ for i in range(number_of_days):
 #Generate three standard (three-engine) train arrival times for each day:
 for i in range(number_of_days):	
 	for j in range(3):
-		days[i].append({'arrival_time':generate_arrival_time(), 'engines':3, 'load_time':3, 'day':i})
+		days[i].append({'arrival_time':generate_arrival_time(j, is_thursday(i)), 'engines':3, 'load_time':3, 'day':i})
 
 #Sort trains for each day based on arrival time:
 for day in range(number_of_days):
@@ -280,8 +294,8 @@ for day in days:
 display_results()
 
 #Print results:
-"""print("******************************************************************************************************************************")
-print("FOR TESTING ONLY:")
+print("******************************************************************************************************************************")
+"""print("FOR TESTING ONLY:")
 i = 1
 for day in days:
 	print("Day " + str(i))
